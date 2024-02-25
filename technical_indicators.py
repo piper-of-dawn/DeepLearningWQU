@@ -2,18 +2,18 @@ import pandas as pd
 def calculate_bollinger_bands(data, window, num_std_dev=1.96):
     data = data.copy()
     column_name = f"BollingerBand_{window}"
-    data['MA'] = data['Adj Close'].rolling(window=window).mean()
-    data['UpperBand'] = data['MA'] + (num_std_dev * data['Adj Close'].rolling(window=window).std())
-    data['LowerBand'] = data['MA'] - (num_std_dev * data['Adj Close'].rolling(window=window).std())
+    data['MA'] = data['Close'].rolling(window=window).mean()
+    data['UpperBand'] = data['MA'] + (num_std_dev * data['Close'].rolling(window=window).std())
+    data['LowerBand'] = data['MA'] - (num_std_dev * data['Close'].rolling(window=window).std())
     data[column_name] = 'Inside'
-    data.loc[data['Adj Close'] > data['UpperBand'], column_name] = 'Above'
-    data.loc[data['Adj Close'] < data['LowerBand'], column_name] = 'Below' 
+    data.loc[data['Close'] > data['UpperBand'], column_name] = 'Above'
+    data.loc[data['Close'] < data['LowerBand'], column_name] = 'Below' 
     data.drop(['MA', 'UpperBand', 'LowerBand'], axis=1, inplace=True)   
     return data[column_name]
 
 def calculate_rsi(data, window):
     column_name = f"RSI_{window}"
-    delta = data['Adj Close'].diff(1)
+    delta = data['Close'].diff(1)
     gain = delta.where(delta > 0, 0)
     loss = -delta.where(delta < 0, 0)
     avg_gain = gain.rolling(window=window).mean()
@@ -64,3 +64,39 @@ def calculate_adx(data, window):
 # calculate_bollinger_bands(data_msft, window=50)
 # calculate_bollinger_bands(data_msft, window=80)
 # calculate_bollinger_bands(data_msft, window=130)
+
+def calculate_rolling_std(data, window):
+    """
+    Calculate rolling standard deviation for a specified column in a DataFrame.
+
+    Parameters:
+    - data: DataFrame
+    - column: str
+        The column for which to calculate the rolling standard deviation.
+    - window: int, optional (default=20)
+        The window size for the rolling standard deviation.
+
+    Returns:
+    - None (Adds a new column 'RollingStd' to the input DataFrame.)
+    """
+    column_name = f"RollingStd_{window}"
+    data[column_name] = data['Close'].rolling(window=window).std()
+    return data[column_name]
+
+def calculate_rolling_mean(data, window):
+    """
+    Calculate rolling standard deviation for a specified column in a DataFrame.
+
+    Parameters:
+    - data: DataFrame
+    - column: str
+        The column for which to calculate the rolling standard deviation.
+    - window: int, optional (default=20)
+        The window size for the rolling standard deviation.
+
+    Returns:
+    - None (Adds a new column 'RollingStd' to the input DataFrame.)
+    """
+    column_name = f"RollingMean_{window}"
+    data[column_name] = data['Close'].rolling(window=window).mean()
+    return data[column_name]

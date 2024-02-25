@@ -12,4 +12,4 @@ def train_test_split(data, test_size, y_name):
     split_row = len(data) - int(test_size * len(data))
     train_data = data.iloc[:split_row]
     test_data = data.iloc[split_row:]
-    return train_test(x_train=train_data.drop(y_name, axis=1), x_test=test_data.drop(y_name, axis=1), y_train=train_data[y_name], y_test=test_data[y_name])
+    return train_test(x_train=train_data.drop(y_name, axis=1).to_numpy(), x_test=test_data.drop(y_name, axis=1).to_numpy(), y_train=train_data[y_name].to_numpy(), y_test=test_data[y_name].to_numpy())
