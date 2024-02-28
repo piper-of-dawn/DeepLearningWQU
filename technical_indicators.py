@@ -8,7 +8,7 @@ def calculate_bollinger_bands(data, window, num_std_dev=1.96):
     data[column_name] = 'Inside'
     data.loc[data['Close'] > data['UpperBand'], column_name] = 'Above'
     data.loc[data['Close'] < data['LowerBand'], column_name] = 'Below' 
-    data.drop(['MA', 'UpperBand', 'LowerBand'], axis=1, inplace=True)   
+    data.drop(['MA', 'UpperBand', 'LowerBand'], axis=1, inplace=True)       
     return data[column_name]
 
 def calculate_rsi(data, window):

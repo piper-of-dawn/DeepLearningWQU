@@ -56,3 +56,49 @@ def ts_differencing(series, order, lag_cutoff):
     for k in range(lag_cutoff):
         res += weights[k]*series.shift(k).fillna(0)
     return res[lag_cutoff:] 
+
+
+
+
+from itertools import product
+from visualisation import plot_acf_pacf_side_by_side
+from preprocessing import encode_labels, train_test_split
+import polars as pl
+
+class TimeSeries:
+    def __init__(self, ticker: str):
+        self.data = get_ohlc_data([ticker], '2017-01-01')[ticker].reset_index()
+
+    def construct_returns(self):
+        self.data['Returns'] = self.data['Close'].pct_change()
+        return self
+    
+    def profitability (self, column, threshold):
+        self.data['Profitable'] = (self.data[column] > threshold).astype(int)
+        return self
+    
+    def construct_technical_indicators(self, indicators: list, windows: list):
+        for func, window in product(indicators, windows):
+            series = func(self.data, window)
+            self.data[series.name] = series
+        return self
+    
+    def lag_column(self, column, skip_lags,n_lags):
+        self.data = pl.DataFrame(self.data)
+        self.data = self.data.with_columns([pl.col(column).shift(lag).alias(f"{column}_lag{lag}") for lag in range(skip_lags, n_lags + 1)]).to_pandas()
+        return self
+
+    def acf(self, column, max_lags):
+        plot_acf_pacf_side_by_side(self.data[column], lags=max_lags).show()
+
+    def clean_data_and_prepare_for_training(self, target: str):
+        self.data = self.data.dropna()
+        self.data = encode_labels(self.data, [column for column in self.data.columns if column.startswith('Bollinger')])
+        self.data = self.data.drop(columns=['Date', 'Open', 'High', 'Low', 'Volume', 'Adj Close'])
+        self.training_data = train_test_split(data=self.data,test_size=0.2,y_name=target)
+        return self
+    
+    def add_index(self):
+        self.data = self.data.reset_index()
+        return self
+    
